@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QMainWindow, QWidget, QApplication, QGroupBox, QPushButton, QLabel, QHBoxLayout,  QVBoxLayout, QGridLayout, QFormLayout, QLineEdit, QTextEdit
-from PyQt5.QtGui import QPainter, QPen
+from PyQt5.QtGui import QPainter, QPen, QBrush
 from PyQt5.QtCore import *
 
 class Canvas(QWidget):
@@ -8,7 +8,7 @@ class Canvas(QWidget):
         super(Canvas,self).__init__(parent)
 
         self.gb = QGroupBox(self)
-        self.gb.setGeometry(0,0,600,600) #一定要有个东西把它撑起来！！不然看不到
+        self.gb.setGeometry(0,0,240,240) #一定要有个东西把它撑起来！！不然看不到
         #self.setStyleSheet('background-color:#fff')
 
         self.setMouseTracking(False)
@@ -17,6 +17,9 @@ class Canvas(QWidget):
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
+        brush = QBrush(Qt.white)
+        painter.setBrush(brush)
+        painter.drawRect(0, 0, 240, 240)
         pen = QPen(Qt.black, 10, Qt.SolidLine)
         painter.setPen(pen)
 
@@ -48,25 +51,27 @@ class Canvas(QWidget):
         self.update()
 
 
+
 class DisplayWindow(QWidget):
     def __init__(self, parent=None):
         super(DisplayWindow,self).__init__(parent)
-        self.resize(940,630)
+        self.resize(580,270)
 
         self.train_number = -1
         self.result_number = -1
 
-        mainLayout = QHBoxLayout(self)
-        canvasLayout = QHBoxLayout()
-        menuLayout = QGridLayout()
+        self.mainLayout = QHBoxLayout(self)
+        self.canvasLayout = QGridLayout()
+        self.menuLayout = QGridLayout()
         
         
         # 添加自定义部件（MyWidget）
         self.canvas = Canvas(self)
-        self.canvas.resize(600, 600)
-        canvasLayout.addWidget(self.canvas)
+        self.canvas.resize(240,240)
+        #self.canvas.setStyleSheet('background-color:#fff')
+        self.canvasLayout.addWidget(self.canvas, 0, 0)
         
-        menuLayout.setSpacing(10)
+        self.menuLayout.setSpacing(10)
         # 添加编辑框（QLineEdit）
         self.button_number = []
         for i in range(10) :
@@ -75,9 +80,9 @@ class DisplayWindow(QWidget):
             self.button_number[i].resize(self.button_number[i].sizeHint())
             #self.button_number[i].clicked.connect(self.choose_num)
             if i > 0:
-                menuLayout.addWidget(self.button_number[i], (9-i)/3, (i+2)%3)
+                self.menuLayout.addWidget(self.button_number[i], (9-i)/3, (i+2)%3)
             else:
-                menuLayout.addWidget(self.button_number[i], (9-i)/3, i%3)
+                self.menuLayout.addWidget(self.button_number[i], (9-i)/3, i%3)
 
         self.button_number[0].clicked.connect(self.choose_num_0)
         self.button_number[1].clicked.connect(self.choose_num_1)
@@ -92,17 +97,17 @@ class DisplayWindow(QWidget):
 
         self.button_train = QPushButton("train", self)
         self.button_train.clicked.connect(self.BP_train)
-        menuLayout.addWidget(self.button_train, 3, 1, 1, 1)
+        self.menuLayout.addWidget(self.button_train, 3, 1, 1, 1)
 
         self.train_number_label = QLabel(self)
         self.train_number_label.setText("-1")
         self.train_number_label.setAlignment(Qt.AlignCenter)
         self.train_number_label.setStyleSheet('background-color:#fff')
-        menuLayout.addWidget(self.train_number_label, 3, 2, 1, 1)
+        self.menuLayout.addWidget(self.train_number_label, 3, 2, 1, 1)
 
         self.button_iden = QPushButton("Identify", self)
         self.button_iden.clicked.connect(self.BP_iden)
-        menuLayout.addWidget(self.button_iden, 4, 0, 1, 2)
+        self.menuLayout.addWidget(self.button_iden, 4, 0, 1, 2)
 
         self.result_number_label = QLabel(self)
         '''self.result_number_label.setFixedWidth(300)
@@ -111,10 +116,10 @@ class DisplayWindow(QWidget):
         self.result_number_label.setAlignment(Qt.AlignCenter)
         self.result_number_label.setStyleSheet('background-color:#fff')
 
-        menuLayout.addWidget(self.result_number_label, 4, 2, 1, 1)
+        self.menuLayout.addWidget(self.result_number_label, 4, 2, 1, 1)
 
-        mainLayout.addLayout(canvasLayout, 9)
-        mainLayout.addLayout(menuLayout, 1)
+        self.mainLayout.addLayout(self.canvasLayout, 9)
+        self.mainLayout.addLayout(self.menuLayout, 1)
 
     def choose_num_0(self):
         self.train_number = 0
@@ -161,6 +166,9 @@ class DisplayWindow(QWidget):
             #pass
             self.train_number = -1
             self.train_number_label.setText(str(self.train_number))
+            self.canvas = Canvas(self)
+            self.canvas.resize(240, 240)
+            self.canvasLayout.addWidget(self.canvas, 0, 0)
         
     def BP_iden(self):
         self.result_number = -1
