@@ -3,7 +3,7 @@ import numpy as np
 import bp_mnist_loader
 
 class Network(object):
-    def __init__(self, sizes):
+    def __init__(self, sizes=[784, 30, 10]):
         self.num_layers = len(sizes)
         self.sizes = sizes
         self.biases = [np.random.randn(y, 1) for y in sizes[1:]]
@@ -14,7 +14,7 @@ class Network(object):
             a = sigmoid(np.dot(w, a)+b)
         return a
 
-    def start_training(self,training_data,epochs,mini_batch_size,eta):
+    def start_training(self,training_data,epochs=1,mini_batch_size=10,eta=3.0):
         n = len(training_data)
         for j in xrange(epochs):
             random.shuffle(training_data)
@@ -23,7 +23,7 @@ class Network(object):
                 self.update_mini_batch(mini_batch, eta)
             print("Epoch {0} complete".format(j))
 
-    def start_testing(self,test_data,epochs,mini_batch_size,eta):
+    def start_testing(self,test_data,epochs=1,mini_batch_size=10,eta=3.0):
         n_test = len(test_data)
         for j in xrange(epochs):
             print("Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data), n_test))
