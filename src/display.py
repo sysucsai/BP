@@ -91,6 +91,8 @@ class DisplayWindow(QWidget):
         self.resize(canvas_size + 340, canvas_size + 30)
 
         self.bp = bp_network.Network()
+        training_data, validation_data, test_data = bp_mnist_loader.load_data_wrapper()
+        self.bp.start_training(list(training_data), 1, 1, 3.0)
 
         self.train_number = -1
         self.result_number = -1
@@ -234,8 +236,8 @@ class DisplayWindow(QWidget):
         #training_data, validation_data, test_data = bp_mnist_loader.load_data_wrapper()
         #self.bp.start_training(training_data, 1, 1, 3.0)
         self.bp.start_single_training(train_map,train_number)
-        print(self.bp.biases)
-        print(self.bp.weights)
+        #print(self.bp.biases)
+        #print(self.bp.weights)
 
     def BP_iden(self, iden_map):
         #请进行识别
