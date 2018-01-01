@@ -199,8 +199,6 @@ class DisplayWindow(QWidget):
             #self.catch_screen()
             self.BP_train(self.catch_screen(), self.train_number)
 
-            self.train_number_label.setText(str(self.train_number))
-            self.train_number = -1
             
             
         
@@ -209,8 +207,7 @@ class DisplayWindow(QWidget):
         #self.catch_screen()
         self.result_number = self.BP_iden(self.catch_screen())
 
-        self.result_number_label.setText(str(self.result_number))
-        self.result_number = -1
+        
 
     def catch_screen(self):
         screen_map = self.canvas.map_zip()
@@ -219,6 +216,11 @@ class DisplayWindow(QWidget):
             print(i)'''
         
     def map_flash(self):
+        self.train_number = -1
+        self.train_number_label.setText(str(self.train_number))
+        self.result_number = -1
+        self.result_number_label.setText(str(self.result_number))
+        
         self.canvas = Canvas(self)
         self.canvas.resize(canvas_size, canvas_size)
         self.canvasLayout.addWidget(self.canvas, 0, 0)
