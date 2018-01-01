@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
 import sys
+
 from PyQt5.QtWidgets import QMainWindow, QWidget, QApplication, QGroupBox, QPushButton, QLabel, QHBoxLayout,  QVBoxLayout, QGridLayout, QFormLayout, QLineEdit, QTextEdit
 from PyQt5.QtGui import QPainter, QPen, QBrush, QScreen, QPixmap, QGuiApplication
 from PyQt5.QtCore import *
 
 import bp_network
 import bp_mnist_loader
+
 
 class Canvas(QWidget):
     def __init__(self, parent=None):
@@ -50,9 +53,13 @@ class Canvas(QWidget):
     def mouseMoveEvent(self, event):
         pos = (event.pos().x(), event.pos().y())
         half_pen_size = int(large_times/2)
+        xstart = max(0, pos[0]-half_pen_size)
+        xend = min(canvas_size, pos[0]+half_pen_size)
+        ystart = max(0, pos[1]-half_pen_size)
+        yend = min(canvas_size, pos[1]+half_pen_size)
         if self.mouse_down == True:
-            for i in range(pos[0]-half_pen_size, pos[0]+half_pen_size):
-                for j in range(pos[1]-half_pen_size, pos[1]+half_pen_size):
+            for i in range(xstart, xend):
+                for j in range(ystart, yend):
                     self.map[j][i] = 1
         self.pos_list.append(pos)
 
@@ -81,7 +88,7 @@ class DisplayWindow(QWidget):
     def __init__(self, parent=None):
         super(DisplayWindow,self).__init__(parent)
         global size, canvas_size
-        self.resize(canvas_size + 400, canvas_size + 50)
+        self.resize(canvas_size + 340, canvas_size + 30)
 
         self.bp = bp_network.Network()
 
@@ -196,19 +203,16 @@ class DisplayWindow(QWidget):
     def train(self):
         if self.train_number >= 0:
             #self.bp.start_training(self.catch_screen())
-            #self.catch_screen()
-            self.BP_train(self.catch_screen(), self.train_number)
-
+            #print(self.catch_screen())
+            self.BP_train(self.catch_screen(), self.train_number)  
+            self.train_number = -1
             
-            
-        
     def iden(self):
         #self.result_number = self.bp.start_testing(self.catch_screen())
         #self.catch_screen()
         self.result_number = self.BP_iden(self.catch_screen())
-
+        self.result_number_label.setText(str(self.result_number))
         
-
     def catch_screen(self):
         screen_map = self.canvas.map_zip()
         return screen_map
@@ -220,18 +224,22 @@ class DisplayWindow(QWidget):
         self.train_number_label.setText(str(self.train_number))
         self.result_number = -1
         self.result_number_label.setText(str(self.result_number))
-        
+
         self.canvas = Canvas(self)
         self.canvas.resize(canvas_size, canvas_size)
         self.canvasLayout.addWidget(self.canvas, 0, 0)
 
     def BP_train(self, train_map, train_number):
         #传入train_map，二维列表，及对应的数字train_number，请进行训练
-        pass
+        #training_data, validation_data, test_data = bp_mnist_loader.load_data_wrapper()
+        #self.bp.start_training(training_data, 1, 1, 3.0)
+        self.bp.start_single_training(train_map,train_number)
+        print(self.bp.biases)
+        print(self.bp.weights)
 
     def BP_iden(self, iden_map):
         #请进行识别
-        ans = -1
+        ans = self.bp.start_single_test(iden_map)
         return ans
 
 if __name__ == '__main__' :
@@ -239,8 +247,10 @@ if __name__ == '__main__' :
     size = 28
     large_times = 10
     canvas_size = size * large_times
-    #global bp2 = bp_network.Network()
-    #initialize
+    #Initialize
+    #training_data, validation_data, test_data = bp_mnist_loader.load_data_wrapper()
+    #bp.start_training(training_data, 1, 1, 3.0)
+
     app = QApplication(sys.argv)
     w = DisplayWindow()
     w.show()
