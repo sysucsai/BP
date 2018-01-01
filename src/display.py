@@ -81,7 +81,7 @@ class DisplayWindow(QWidget):
     def __init__(self, parent=None):
         super(DisplayWindow,self).__init__(parent)
         global size, canvas_size
-        self.resize(canvas_size + 340, canvas_size + 30)
+        self.resize(canvas_size + 400, canvas_size + 50)
 
         self.bp = bp_network.Network()
 
@@ -199,8 +199,9 @@ class DisplayWindow(QWidget):
             #self.catch_screen()
             self.BP_train(self.catch_screen(), self.train_number)
 
-            self.train_number = -1
             self.train_number_label.setText(str(self.train_number))
+            self.train_number = -1
+            
             
         
     def iden(self):
@@ -236,6 +237,8 @@ if __name__ == '__main__' :
     size = 28
     large_times = 10
     canvas_size = size * large_times
+    #global bp2 = bp_network.Network()
+    #initialize
     app = QApplication(sys.argv)
     w = DisplayWindow()
     w.show()
