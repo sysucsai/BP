@@ -9,11 +9,12 @@ import bp_mnist_loader
 class Canvas(QWidget):
     def __init__(self, parent=None):
         super(Canvas,self).__init__(parent)
-        self.map = [[0 for i in range(240)] for j in range(240)]
+        global size, canvas_size, large_times
+        self.map = [[0 for i in range(canvas_size)] for j in range(canvas_size)]
         self.mouse_down = False
 
         self.gb = QGroupBox(self)
-        self.gb.setGeometry(0,0,240,240) #一定要有个东西把它撑起来！！不然看不到
+        self.gb.setGeometry(0,0,canvas_size,canvas_size) #一定要有个东西把它撑起来！！不然看不到
         #self.setStyleSheet('background-color:#fff')
 
         self.setMouseTracking(False)
@@ -24,8 +25,8 @@ class Canvas(QWidget):
         painter.begin(self)
         brush = QBrush(Qt.white)
         painter.setBrush(brush)
-        painter.drawRect(0, 0, 240, 240)
-        pen = QPen(Qt.black, 10, Qt.SolidLine)
+        painter.drawRect(0, 0, canvas_size, canvas_size)
+        pen = QPen(Qt.black, large_times, Qt.SolidLine)
         painter.setPen(pen)
 
         if len(self.pos_list) > 1:
@@ -48,9 +49,10 @@ class Canvas(QWidget):
 
     def mouseMoveEvent(self, event):
         pos = (event.pos().x(), event.pos().y())
+        half_pen_size = int(large_times/2)
         if self.mouse_down == True:
-            for i in range(pos[0]-5, pos[0]+5):
-                for j in range(pos[1]-5, pos[1]+5):
+            for i in range(pos[0]-half_pen_size, pos[0]+half_pen_size):
+                for j in range(pos[1]-half_pen_size, pos[1]+half_pen_size):
                     self.map[j][i] = 1
         self.pos_list.append(pos)
 
@@ -64,21 +66,22 @@ class Canvas(QWidget):
         self.update()
 
     def map_zip(self):
-        zip_map = [[0 for i in range(24)] for j in range(24)]
-        for i in range(240):
-            for j in range(240):
-                zip_map[int(i/10)][int(j/10)] += self.map[i][j]
+        zip_map = [[0.0 for i in range(size)] for j in range(size)]
+        for i in range(canvas_size):
+            for j in range(canvas_size):
+                zip_map[int(i/large_times)][int(j/large_times)] += self.map[i][j]/(large_times*large_times)
         return zip_map
 
     def map_clear(self):
         for i in self.map:
             for j in i:
-                j = 0
+                j = 0.0
 
 class DisplayWindow(QWidget):
     def __init__(self, parent=None):
         super(DisplayWindow,self).__init__(parent)
-        self.resize(580,270)
+        global size, canvas_size
+        self.resize(canvas_size + 340, canvas_size + 30)
 
         self.bp = bp_network.Network()
 
@@ -92,7 +95,7 @@ class DisplayWindow(QWidget):
         
         # 添加自定义部件（MyWidget）
         self.canvas = Canvas(self)
-        self.canvas.resize(240,240)
+        self.canvas.resize(canvas_size, canvas_size)
         #self.canvas.setStyleSheet('background-color:#fff')
         self.canvasLayout.addWidget(self.canvas, 0, 0)
         
@@ -211,16 +214,17 @@ class DisplayWindow(QWidget):
     def catch_screen(self):
         screen_map = self.canvas.map_zip()
         return screen_map
-        '''for row in train_map:
-            print(row)'''
+        '''for i in screen_map:
+            print(i)'''
         
     def map_flash(self):
         self.canvas = Canvas(self)
-        self.canvas.resize(240, 240)
+        self.canvas.resize(canvas_size, canvas_size)
         self.canvasLayout.addWidget(self.canvas, 0, 0)
 
     def BP_train(self, train_map, train_number):
         #传入train_map，二维列表，及对应的数字train_number，请进行训练
+        pass
 
     def BP_iden(self, iden_map):
         #请进行识别
@@ -228,6 +232,10 @@ class DisplayWindow(QWidget):
         return ans
 
 if __name__ == '__main__' :
+    global size, canvas_size, large_times
+    size = 28
+    large_times = 10
+    canvas_size = size * large_times
     app = QApplication(sys.argv)
     w = DisplayWindow()
     w.show()
