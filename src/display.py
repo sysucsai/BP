@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QMainWindow, QWidget, QApplication, QGroupBox, QPush
 from PyQt5.QtGui import QPainter, QPen, QBrush, QScreen, QPixmap, QGuiApplication
 from PyQt5.QtCore import *
 
-import bp_network
+import network
 import bp_mnist_loader
 
 
@@ -53,13 +53,9 @@ class Canvas(QWidget):
     def mouseMoveEvent(self, event):
         pos = (event.pos().x(), event.pos().y())
         half_pen_size = int(large_times/2)
-        xstart = max(0, pos[0]-half_pen_size)
-        xend = min(canvas_size, pos[0]+half_pen_size)
-        ystart = max(0, pos[1]-half_pen_size)
-        yend = min(canvas_size, pos[1]+half_pen_size)
         if self.mouse_down == True:
-            for i in range(xstart, xend):
-                for j in range(ystart, yend):
+            for i in range(pos[0]-half_pen_size, pos[0]+half_pen_size):
+                for j in range(pos[1]-half_pen_size, pos[1]+half_pen_size):
                     self.map[j][i] = 1
         self.pos_list.append(pos)
 
@@ -90,9 +86,8 @@ class DisplayWindow(QWidget):
         global size, canvas_size
         self.resize(canvas_size + 340, canvas_size + 30)
 
-        self.bp = bp_network.Network()
-        training_data, validation_data, test_data = bp_mnist_loader.load_data_wrapper()
-        self.bp.start_training(list(training_data), 1, 1, 3.0)
+        self.bp = network.Network()
+        self.bp.begin_train()
 
         self.train_number = -1
         self.result_number = -1
@@ -205,16 +200,21 @@ class DisplayWindow(QWidget):
     def train(self):
         if self.train_number >= 0:
             #self.bp.start_training(self.catch_screen())
-            #print(self.catch_screen())
-            self.BP_train(self.catch_screen(), self.train_number)  
+            #self.catch_screen()
+            self.BP_train(self.catch_screen(), self.train_number)
+
             self.train_number = -1
+            self.train_number_label.setText(str(self.train_number))
             
+        
     def iden(self):
         #self.result_number = self.bp.start_testing(self.catch_screen())
         #self.catch_screen()
         self.result_number = self.BP_iden(self.catch_screen())
+
         self.result_number_label.setText(str(self.result_number))
-        
+        self.result_number = -1
+
     def catch_screen(self):
         screen_map = self.canvas.map_zip()
         return screen_map
@@ -222,22 +222,13 @@ class DisplayWindow(QWidget):
             print(i)'''
         
     def map_flash(self):
-        self.train_number = -1
-        self.train_number_label.setText(str(self.train_number))
-        self.result_number = -1
-        self.result_number_label.setText(str(self.result_number))
-
         self.canvas = Canvas(self)
         self.canvas.resize(canvas_size, canvas_size)
         self.canvasLayout.addWidget(self.canvas, 0, 0)
 
     def BP_train(self, train_map, train_number):
         #传入train_map，二维列表，及对应的数字train_number，请进行训练
-        #training_data, validation_data, test_data = bp_mnist_loader.load_data_wrapper()
-        #self.bp.start_training(training_data, 1, 1, 3.0)
         self.bp.start_single_training(train_map,train_number)
-        #print(self.bp.biases)
-        #print(self.bp.weights)
 
     def BP_iden(self, iden_map):
         #请进行识别
