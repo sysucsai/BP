@@ -7,6 +7,7 @@ from PyQt5.QtCore import *
 
 import network
 import bp_mnist_loader
+import shelve
 
 
 class Canvas(QWidget):
@@ -87,7 +88,15 @@ class DisplayWindow(QWidget):
         self.resize(canvas_size + 340, canvas_size + 30)
 
         self.bp = network.Network()
-        self.bp.begin_train()
+        file = shelve.open("train_data")
+        if 'thresholds' in file:
+            self.bp.thresholds = file['thresholds']
+            self.bp.weights = file['weights']
+            print("Load train data successfully")
+        else:
+            #self.bp.begin_train()
+            print("[Warning!] Load train data fail. Use empty train data!")
+        file.close()
 
         self.train_number = -1
         self.result_number = -1
@@ -205,6 +214,10 @@ class DisplayWindow(QWidget):
 
             self.train_number = -1
             self.train_number_label.setText(str(self.train_number))
+            file = shelve.open("train_data")
+            file['thresholds'] = self.bp.thresholds
+            file['weights'] = self.bp.weights
+            file.close()
             
         
     def iden(self):
