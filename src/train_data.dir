@@ -1,2 +1,3 @@
 'thresholds', (0, 520)
 'weights', (1024, 190767)
+'trainnum', (192000, 6)

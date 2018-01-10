@@ -15,6 +15,7 @@ class Network(object):
         self.epochs = 10
         # 学习速率
         self.eta = 3.0
+        self.num = 0
 
     def begin_train(self):
         # 导入mnist训练集，这里只读取trainging_data
@@ -31,11 +32,11 @@ class Network(object):
 
     def start_single_training(self, training_map, training_number):
         #对传入的数据训练十次，加强交互训练的强度
-        for j in range(self.epochs):
-            training_inputs = [np.reshape(training_map, (784, 1))]
-            training_results = [vectorized_result(training_number)]
-            training_data = zip(training_inputs, training_results)
-            self.update_values(list(training_data))
+        training_inputs = [np.reshape(training_map, (784, 1))]
+        training_results = [vectorized_result(training_number)]
+        training_data = zip(training_inputs, training_results)
+        self.update_values(list(training_data))
+        self.num = self.num+1
 
     def start_single_test(self, test_data):
         #对传入的测试数据进行测试，返回识别值

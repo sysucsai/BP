@@ -92,7 +92,12 @@ class DisplayWindow(QWidget):
         if 'thresholds' in file:
             self.bp.thresholds = file['thresholds']
             self.bp.weights = file['weights']
+            self.bp.num = file['trainnum']
             print("Load train data successfully")
+            #print(self.bp.thresholds)
+            #print(self.bp.weights)
+            print(self.bp.num)
+
         else:
             #self.bp.begin_train()
             print("[Warning!] Load train data fail. Use empty train data!")
@@ -217,6 +222,7 @@ class DisplayWindow(QWidget):
             file = shelve.open("train_data")
             file['thresholds'] = self.bp.thresholds
             file['weights'] = self.bp.weights
+            file['trainnum'] = self.bp.num
             file.close()
             
         
