@@ -1,6 +1,5 @@
-import random
-import numpy as np
 import bp_mnist_loader
+import numpy as np
 
 
 class Network(object):
@@ -23,7 +22,6 @@ class Network(object):
         training_data = list(init_training_data)
         # 初始化训练
         n = len(training_data)
-        random.shuffle(training_data)
         new_train_datas = [training_data[k:k + 1] for k in range(0, n, 1)]
         for new_train_data in new_train_datas:
             # 每个训练数据训练一次，更新权重及阈值
@@ -42,50 +40,50 @@ class Network(object):
     def start_single_test(self, test_data):
         #对传入的测试数据进行测试，返回识别值
         training_inputs = np.reshape(test_data, (784, 1))
-        return np.argmax(self.feedforward(training_inputs))
+        return np.argmax(self.value_to_next(training_inputs))
 
     def update_values(self, new_train_data):
         #更新权重及阈值函数
-        nabla_t = [np.zeros(t.shape) for t in self.thresholds]
-        nabla_w = [np.zeros(w.shape) for w in self.weights]
+        temp_t = [np.zeros(t.shape) for t in self.thresholds]
+        temp_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in new_train_data:
-            delta_nabla_t, delta_nabla_w = self.backprop(x, y)
-            nabla_t = [nb + dnb for nb, dnb in zip(nabla_t, delta_nabla_t)]
-            nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-        self.weights = [w - (self.eta / len(new_train_data)) * nw for w, nw in zip(self.weights, nabla_w)]
-        self.thresholds = [t - (self.eta / len(new_train_data)) * nt for t, nt in zip(self.thresholds, nabla_t)]
+            changes_temp_t, changes_temp_w = self.value_to_back(x, y)
+            temp_t = [nb + dnb for nb, dnb in zip(temp_t, changes_temp_t)]
+            temp_w = [nw + dnw for nw, dnw in zip(temp_w, changes_temp_w)]
+        self.weights = [w - (self.eta / len(new_train_data)) * nw for w, nw in zip(self.weights, temp_w)]
+        self.thresholds = [t - (self.eta / len(new_train_data)) * nt for t, nt in zip(self.thresholds, temp_t)]
 
-    def backprop(self, x, y):
+    def value_to_back(self, x, y):
         #根据输入输出返回与预期的差
-        nabla_t = [np.zeros(t.shape) for t in self.thresholds]
-        nabla_w = [np.zeros(w.shape) for w in self.weights]
+        temp_t = [np.zeros(t.shape) for t in self.thresholds]
+        temp_w = [np.zeros(w.shape) for w in self.weights]
 
-        activation = x
-        activations = [x]
+        func_result = x
+        func_results = [x]
         outputs = []
         for t, w in zip(self.thresholds, self.weights):
-            output = np.dot(w, activation) + t
+            output = np.dot(w, func_result) + t
             outputs.append(output)
-            activation = sigmoid(output)
-            activations.append(activation)
+            func_result = sigmoid(output)
+            func_results.append(func_result)
 
-        delta = self.cost_derivative(activations[-1], y) * \
+        changes = self.dx(func_results[-1], y) * \
                 sigmoid_prime(outputs[-1])
-        nabla_t[-1] = delta
-        nabla_w[-1] = np.dot(delta, activations[-2].transpose())
+        temp_t[-1] = changes
+        temp_w[-1] = np.dot(changes, func_results[-2].transpose())
 
         for l in range(2, self.num_of_layers):
             output = outputs[-l]
             sp = sigmoid_prime(output)
-            delta = np.dot(self.weights[-l + 1].transpose(), delta) * sp
-            nabla_t[-l] = delta
-            nabla_w[-l] = np.dot(delta, activations[-l - 1].transpose())
-        return (nabla_t, nabla_w)
+            changes = np.dot(self.weights[-l + 1].transpose(), changes) * sp
+            temp_t[-l] = changes
+            temp_w[-l] = np.dot(changes, func_results[-l - 1].transpose())
+        return (temp_t, temp_w)
 
-    def cost_derivative(self, output_activations, y):
-        return (output_activations - y)
+    def dx(self, output_func_results, y):
+        return (output_func_results - y)
 
-    def feedforward(self, a):
+    def value_to_next(self, a):
         #由输入得出输出的过程
         for t, w in zip(self.thresholds, self.weights):
             a = sigmoid(np.dot(w, a) + t)
